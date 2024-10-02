@@ -1,0 +1,113 @@
+[root@Survey-App-VCS-Project conf.d]# cat app.ventureconsultancyservices.com.conf 
+upstream hrms {
+    server 157.245.109.206:8095;
+}
+
+
+# Redirect HTTP to HTTPS
+#server {
+#    listen 80;
+#    server_name app.ventureconsultancyservices.com;
+
+    # Redirect all HTTP requests to HTTPS
+#    return 301 https://$host$request_uri;
+#}
+
+# HTTPS server block
+server {
+    server_name app.ventureconsultancyservices.com;# www.app.ventureconsultancyservices.com;
+    #return 301 https://$host$request_uri;
+    # listen 443 ssl default_server;
+#    server_name app.ventureconsultancyservices.com www.app.ventureconsultancyservices.com;
+    root /opt/APPs/react_app/humanresource/hrms/;
+    index index.html;
+    try_files $uri /index.html;
+   #return 301 https://$host$request_uri;
+  #  ssl_certificate /etc/letsencrypt/live/app.ventureconsultancyservices.com/fullchain.pem;
+  #  ssl_certificate_key /etc/letsencrypt/live/app.ventureconsultancyservices.com/privkey.pem;
+
+  
+    location / {
+       proxy_pass http://hrms;
+       proxy_redirect http://hrms http://app.ventureconsultancyservices.com;
+      
+       proxy_redirect https://hrms https://app.ventureconsultancyservices.com;
+       
+#       try_files $uri /index.html;
+        
+ #oocation / {
+
+
+    }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/app.ventureconsultancyservices.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/app.ventureconsultancyservices.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+
+    location /hr-handler/ {
+        proxy_pass http://157.245.109.206:8087;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+    }
+
+   location /identity-handler/ {
+        proxy_pass http://157.245.109.206:8091;  # Backend server IP and port
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+    location /maths-mama/ {
+        proxy_pass http://157.245.109.206:8083;  # Backend server IP and port
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        }   
+    location /candidate-handler/ {
+        proxy_pass http://157.245.109.206:8085;  # Backend server IP and port
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        }
+   
+     location /emp-handler/ {
+        proxy_pass http://157.245.109.206:8093;  # Backend server IP and port
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+     location /stream/ {
+        proxy_pass http://157.245.109.206:1935;  # Backend server IP and port
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+     location /live/ {
+        proxy_pass http://157.245.109.206:8060;  # Backend server IP and port
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        }
+     location /hrmonitor/ {
+        proxy_pass http://157.245.109.206:8082;  # Backend server IP and port
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
