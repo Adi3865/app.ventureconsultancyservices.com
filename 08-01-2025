@@ -1,0 +1,263 @@
+upstream hrms {
+    server 157.245.109.206:8095;
+}
+
+
+# Redirect HTTP to HTTPS
+server {
+ 
+        listen 80;
+    server_name app.ventureconsultancyservices.com;
+
+    # Redirect all HTTP requests to HTTPS
+   return 301 https://$host$request_uri;
+}
+
+
+
+  
+
+# HTTPS server block
+server {
+    server_name app.ventureconsultancyservices.com;# www.app.ventureconsultancyservices.com;
+    #return 301 https://$host$request_uri;
+    # listen 443 ssl default_server;
+#    server_name app.ventureconsultancyservices.com www.app.ventureconsultancyservices.com;
+
+  # SSL and security headers
+#ssl_protocols TLSv1.2 TLSv1.3;
+ssl_session_cache shared:SSL:50m;
+
+
+# CORS headers
+#add_header 'Access-Control-Allow-Origin' '*' always;
+#add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+#add_header 'Access-Control-Allow-Headers' '*' always;
+
+  
+
+    root /opt/APPs/react_app/hrms-new/;
+    index index.html;
+    try_files $uri /index.html;
+   #return 301 https://$host$request_uri;
+  #  ssl_certificate /etc/letsencrypt/live/app.ventureconsultancyservices.com/fullchain.pem;
+  #  ssl_certificate_key /etc/letsencrypt/live/app.ventureconsultancyservices.com/privkey.pem;
+
+  
+    location / {
+       proxy_pass http://hrms;
+       proxy_redirect http://hrms http://app.ventureconsultancyservices.com;
+      
+       proxy_redirect https://hrms https://app.ventureconsultancyservices.com;
+       
+#       try_files $uri /index.html;
+        
+ #oocation / {
+
+
+    }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/app.ventureconsultancyservices.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/app.ventureconsultancyservices.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+    location /hr-handler/ {
+        proxy_pass http://157.245.109.206:8087;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+    }
+
+   location /identity-handler/ {
+        proxy_pass http://157.245.109.206:8091;  # Backend server IP and port
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+      }
+  
+  location /hms/ {
+    proxy_pass http://157.245.109.206:8083;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    
+    # Remove any existing Access-Control headers from upstream
+    proxy_hide_header 'Access-Control-Allow-Origin';
+    proxy_hide_header 'Access-Control-Allow-Credentials';
+    proxy_hide_header 'Access-Control-Allow-Methods';
+    proxy_hide_header 'Access-Control-Allow-Headers';
+    
+    # Add CORS headers
+    add_header 'Access-Control-Allow-Origin' 'https://hospital-management-system-zeta-ten.vercel.app' always;
+    add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+    add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization' always;
+    add_header 'Access-Control-Allow-Credentials' 'true' always;
+    
+    if ($request_method = 'OPTIONS') {
+        add_header 'Access-Control-Allow-Origin' 'https://hospital-management-system-zeta-ten.vercel.app' always;
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+        add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization' always;
+        add_header 'Access-Control-Allow-Credentials' 'true' always;
+        add_header 'Access-Control-Max-Age' 1728000;
+        return 204;
+    }
+}
+
+
+    location /candidate-handler/ {
+        proxy_pass http://157.245.109.206:8085;  # Backend server IP and port
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        }
+   
+     location /emp-handler/ {
+        proxy_pass http://157.245.109.206:8093;  # Backend server IP and port
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+     location /stream/ {
+        proxy_pass http://157.245.109.206:1935;  # Backend server IP and port
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+     location /live/ {
+        proxy_pass http://157.245.109.206:8060;  # Backend server IP and port
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        }
+     location /hrmonitor/ {
+        proxy_pass http://157.245.109.206:8082;  # Backend server IP and port
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    
+      location /itc-ecom/ {
+        proxy_pass http://157.245.109.206:8094;  # Backend server IP and port
+        client_max_body_size 500M; 
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        }
+       location /job-portal/ {
+        proxy_pass http://157.245.109.206:8090;  # Backend server IP and port
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme; 
+        location ~ \.(js|css|png|jpg|jpeg|gif|ico)$ {
+            expires 30d;
+            add_header Cache-Control "public, no-transform";
+ }
+       }
+    
+
+
+   location /itc/ {
+    proxy_pass http://157.245.109.206:8088; 
+    # Basic proxy settings
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto https;
+    
+    # WebSocket support
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    
+    # Increase buffer sizes
+    proxy_buffer_size 128k;
+    proxy_buffers 4 256k;
+    proxy_busy_buffers_size 256k;
+    proxy_temp_file_write_size 256k;
+    
+    # Increase timeouts
+    proxy_connect_timeout 120;
+    proxy_send_timeout 120;
+    proxy_read_timeout 120;
+    
+    # Add CORS headers
+    add_header Access-Control-Allow-Origin * always;
+    add_header Access-Control-Allow-Methods 'GET, POST, OPTIONS' always;
+    add_header Access-Control-Allow-Headers '*' always;
+  ############  
+    # Handle OPTIONS method
+#    if ($request_method = 'OPTIONS') {
+#        add_header Access-Control-Allow-Origin * always;
+#        add_header Access-Control-Allow-Methods 'GET, POST, OPTIONS' always;
+#        add_header Access-Control-Allow-Headers '*' always;
+#        add_header Access-Control-Max-Age 1728000;
+#        add_header Content-Type 'text/plain charset=UTF-8';
+#       add_header Content-Length 0;
+#       return 204;
+#   }
+   }
+##############################################################################################333
+
+# Add specific location for Vite dependencies
+location ~ ^/node_modules/\.vite/ {
+    proxy_pass http://157.245.109.206:8088;
+  
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto https;
+    
+    proxy_buffer_size 128k;
+    proxy_buffers 4 256k;
+    proxy_busy_buffers_size 256k;
+    
+    proxy_connect_timeout 120;
+    proxy_send_timeout 120;
+    proxy_read_timeout 120;
+}
+
+# Add location for source files
+location ~ ^/src/ {
+    proxy_pass http://157.245.109.206:8088;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto https;
+}   
+
+ # Vite dev server resources
+       # Vite specific locations
+    location ~ ^/(@vite/client|@react-refresh|node_modules/vite) {
+        proxy_pass http://157.245.109.206:8088;  # Point to 8088 instead of 8095
+        
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        
+        proxy_connect_timeout 120s;
+        proxy_send_timeout 120s;
+        proxy_read_timeout 120s;
+    }
+####################################################33333####33
+
+    }
